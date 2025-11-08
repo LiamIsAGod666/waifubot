@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Choose Your Waifu</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg:#0f1116; --card:#171a21; --text:#e6e8ec; --muted:#9aa4b2; --accent:#7aa2f7;
+      --radius:18px;
+    }
+    body {
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+      background: var(--bg); color: var(--text);
+    }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 20px; margin: 8px 0 16px; font-weight: 700; }
+    .grid {
+      display: grid; gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    .card {
+      background: var(--card); border-radius: var(--radius); overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,.25); cursor: pointer; transition: transform .08s ease;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .card:hover { transform: translateY(-2px); }
+    .thumb {
+      background: linear-gradient(135deg, rgba(122,162,247,.4), rgba(122,162,247,.05));
+      height: 140px; display:flex; align-items:center; justify-content:center;
+      font-size: 28px;
+    }
+    .body { padding: 12px 14px 14px; }
+    .name { font-weight: 700; margin: 0 0 6px; }
+    .desc { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.35; height: 36px; overflow: hidden; }
+    .bar { display:flex; justify-content: space-between; align-items:center; margin-top: 10px; }
+    .pill { font-size: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(122,162,247,.12); color: var(--accent); }
+    .cta { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Characters</h1>
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // use full height
+    // Dark / light theming
+    if (tg.colorScheme === "light") {
+      document.documentElement.style.setProperty("--bg", "#f3f5f7");
+      document.documentElement.style.setProperty("--card", "#ffffff");
+      document.documentElement.style.setProperty("--text", "#0b1220");
+      document.documentElement.style.setProperty("--muted", "#5b6472");
+      document.documentElement.style.setProperty("--accent", "#3b82f6");
+    }
+
+    // Keep these names synced with your bot's WAIFUS dict
+    const WAIFUS = [
+      { name:"Aiko",  desc:"Flirtatious, upbeat senpai.", icon:"🤠" },
+      { name:"Mrs. Grace", desc:"Caring and charming MILF.", icon:"💍", mapTo:"Yuki" }, // example alias mapping
+      { name:"Bianca", desc:"Confident, elegant tease.", icon:"👠", mapTo:"Mira" },
+      { name:"Rin",   desc:"Gamer gremlin, meme queen.", icon:"🎮" },
+      { name:"Mira",  desc:"Tsundere-lite, secretly sweet.", icon:"🔥" },
+      { name:"Yuki",  desc:"Soft-spoken, cozy vibes.", icon:"🌸" },
+    ];
+
+    const grid = document.getElementById("grid");
+
+    function card(w) {
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="thumb">${w.icon || "✨"}</div>
+        <div class="body">
+          <p class="name">${w.name}</p>
+          <p class="desc">${w.desc || ""}</p>
+          <div class="bar">
+            <span class="pill">Select</span>
+            <span class="cta">Tap to choose</span>
+          </div>
+        </div>
+      `;
+      el.addEventListener("click", () => {
+        const botName = w.mapTo || w.name; // map pretty label to actual bot persona name
+        tg.sendData(JSON.stringify({ type:"set_waifu", name: botName }));
+        tg.close(); // close the mini app
+      });
+      return el;
+    }
+
+    WAIFUS.forEach(w => grid.appendChild(card(w)));
+  </script>
+</body>
+</html>
